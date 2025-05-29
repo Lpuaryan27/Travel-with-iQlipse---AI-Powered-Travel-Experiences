@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Destinations - PowerBed Travel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Initialize Tailwind config
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .filter-btn {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            background-color: #e5e7eb;
+            color: #374151;
+            transition: background-color 0.3s;
+        }
+        .filter-btn:hover {
+            background-color: #d1d5db;
+        }
+        .filter-btn.active {
+            background-color: #3B82F6;
+            color: white;
+        }
+        .filter-btn.active:hover {
+            background-color: #2563eb;
+        }
+        #chatMessages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chatMessages::-webkit-scrollbar-track {
+            background-color: #f3f4f6;
+        }
+        #chatMessages::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 9999px;
+        }
+        .gm-style .gm-style-iw {
+            padding: 0 !important;
+        }
+        .gm-style .gm-style-iw-c {
+            padding: 0 !important;
+            max-width: 300px !important;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="index.html" class="flex items-center">
+                            <i class="fas fa-bed text-blue-500 text-2xl mr-2"></i>
+                            <span class="text-xl font-bold text-gray-800">Travel with iQlipse</span>
+                        </a>
+                    </div>
+                
+                <div class="flex items-center">
+                   
+                    <div class="-mr-2 flex items-center md:hidden">
+                        <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-controls="mobile-menu" aria-expanded="false" id="mobile-menu-button">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="signin.html" class="block bg-gray-100 text-gray-800 border border-gray-300 px-4 py-2 mx-4 rounded-md text-sm font-medium">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Map Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Explore Our Destinations</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Click on any location to see details and connect with our travel experts</p>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Map Container -->
+                <div class="lg:w-2/3 h-[600px] rounded-xl overflow-hidden shadow-xl">
+                    <div id="map" class="w-full h-full"></div>
+                </div>
+                
+                <!-- Side Panel -->
+                <div class="lg:w-1/3 bg-gray-50 rounded-xl p-6 shadow-xl">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-search text-blue-500 mr-3"></i>
+                        <input type="text" id="searchBox" placeholder="Search destinations..." class="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-2">Filter by:</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-btn active" data-type="all">All</button>
+                            <button class="filter-btn" data-type="beach">Beach</button>
+                            <button class="filter-btn" data-type="mountain">Mountain</button>
+                            <button class="filter-btn" data-type="city">City</button>
+                            <button class="filter-btn" data-type="adventure">Adventure</button>
+                        </div>
+                    </div>
+                    
+                    <div id="locationDetails" class="hidden">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 id="locationName" class="text-xl font-bold text-gray-800"></h3>
+                            <button id="closeDetails" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <img id="locationImage" src="" alt="" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <p id="locationDescription" class="text-gray-600 mb-4"></p>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-dollar-sign text-gray-500 mr-2"></i>
+                            <span id="locationPrice" class="text-gray-700"></span>
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-clock text-gray-500 mr-2"></i>
+                            <span id="locationDuration" class="text-gray-700"></span>
+                        </div>
+                        <button id="connectBtn" class="w-full bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium">
+                            Connect with Travel Expert
+                        </button>
+                    </div>
+                    
+                    <div id="noSelection" class="text-center py-12">
+                        <i class="fas fa-map-marker-alt text-gray-300 text-4xl mb-4"></i>
+                        <p class="text-gray-500">Select a location on the map to see details</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-md mx-4">
+            <div class="bg-blue-500 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h3 class="font-semibold">Chat with Travel Expert</h3>
+                <button id="closeChatModal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div id="chatMessages" class="h-64 overflow-y-auto mb-4 space-y-3">
+                    <!-- Chat messages will appear here -->
+                </div>
+                <div class="flex">
+                    <input type="text" id="chatInput" placeholder="Type your message..." class="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:ring-blue-500 focus:border-blue-500">
+                    <button id="sendChatBtn" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class="fas fa-bed text-blue-500 text-xl mr-2"></i>
+                    <span class="text-lg font-bold">Travel with iQlipse</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Help Center</a>
+                </div>
+            </div>
+            <div class="mt-6 text-center md:text-left">
+                <p class="text-gray-400 text-sm">© 2023 PowerBed Travel. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load Google Maps API -->
+    <script>
+        // Replace with your actual Google Maps API key
+        const apiKey = 'AIzaSyCErJlP6jyVBp5gCSBpxhyqCIyl1H83DbI';
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    </script>
+
+    <!-- Load MarkerClusterer library -->
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+    <script>
+        // Map variables
+        let map;
+        let markers = [];
+        let markerCluster;
+        let selectedMarker = null;
+        let infoWindow = null;
+
+        // Sample destination data
+        const destinations = [
+            {
+                id: 1,
+                name: "Bali, Indonesia",
+                type: "beach",
+                position: { lat: -8.409518, lng: 115.188919 },
+                image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                description: "Beautiful tropical paradise with stunning beaches and rich culture.",
+                price: "From $899",
+                duration: "7-14 days recommended"
+            },
+            {
+                id: 2,
+                name: "Paris, France",
+                type: "city",
+                position: { lat: 48.856613, lng: 2.352222 },
+                image: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                description: "The city of love with iconic landmarks and world-class cuisine.",
+                price: "From $1,299",
+                duration: "5-7 days recommended"
+            },
+            {
+                id: 3,
+                name: "Swiss Alps",
+                type: "mountain",
+                position: { lat: 46.798562, lng: 8.231973 },
+                image: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                description: "Breathtaking mountain views and excellent skiing opportunities.",
+                price: "From $1,499",
+                duration: "7-10 days recommended"
+            },
+            {
+                id: 4,
+                name: "Santorini, Greece",
+                type: "beach",
+                position: { lat: 36.393156, lng: 25.461510 },
+                image: "https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1620&q=80",
+                description: "Stunning white-washed buildings with blue domes overlooking the Aegean Sea.",
+                price: "From $1,199",
+                duration: "5-7 days recommended"
+            },
+            {
+                id: 5,
+                name: "Tokyo, Japan",
+                type: "city",
+                position: { lat: 35.6761919, lng: 139.6503106 },
+                image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80",
+                description: "Vibrant metropolis blending ultramodern and traditional elements.",
+                price: "From $1,599",
+                duration: "7-10 days recommended"
+            },
+            {
+                id: 6,
+                name: "Patagonia, Chile",
+                type: "adventure",
+                position: { lat: -51.622612, lng: -72.340684 },
+                image: "https://images.unsplash.com/photo-1582972236019-ea9eaf1f6ddb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                description: "Rugged wilderness with glaciers, mountains, and unique wildlife.",
+                price: "From $1,899",
+                duration: "10-14 days recommended"
+            }
+        ];
+
+        // Initialize the map
+        function initMap() {
+            // Create the map centered on the world
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 20, lng: 0 },
+                zoom: 2,
+                styles: [
+                    {
+                        featureType: "poi",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            });
+
+            // Add markers for each destination
+            addMarkers();
+
+            // Initialize search box
+            const searchBox = new google.maps.places.SearchBox(
+                document.getElementById("searchBox")
+            );
+
+            // Bias the SearchBox results towards current map's viewport
+            map.addListener("bounds_changed", () => {
+                searchBox.setBounds(map.getBounds());
+            });
+
+            // Listen for the event fired when the user selects a prediction
+            searchBox.addListener("places_changed", () => {
+                const places = searchBox.getPlaces();
+                if (places.length === 0) return;
+
+                // For each place, get the icon, name and location
+                const bounds = new google.maps.LatLngBounds();
+                places.forEach((place) => {
+                    if (!place.geometry) return;
+                    bounds.extend(place.geometry.location);
+                });
+                map.fitBounds(bounds);
+            });
+        }
+
+        // Add markers to the map
+        function addMarkers() {
+            // Clear existing markers
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+
+            // Get active filter
+            const activeFilter = document.querySelector(".filter-btn.active").dataset.type;
+
+            // Add markers for each destination that matches the filter
+            destinations.forEach(destination => {
+                if (activeFilter !== "all" && destination.type !== activeFilter) return;
+
+                const marker = new google.maps.Marker({
+                    position: destination.position,
+                    map: map,
+                    title: destination.name,
+                    icon: {
+                        url: getMarkerIcon(destination.type),
+                        scaledSize: new google.maps.Size(32, 32)
+                    },
+                    destination: destination
+                });
+
+                markers.push(marker);
+
+                // Add click listener to each marker
+                marker.addListener("click", () => {
+                    showLocationDetails(marker.destination);
+                    if (infoWindow) infoWindow.close();
+                    
+                    // Center map on marker with some padding
+                    map.panTo(marker.getPosition());
+                    
+                    // Highlight selected marker
+                    if (selectedMarker) {
+                        selectedMarker.setIcon({
+                            url: getMarkerIcon(selectedMarker.destination.type),
+                            scaledSize: new google.maps.Size(32, 32)
+                        });
+                    }
+                    selectedMarker = marker;
+                    marker.setIcon({
+                        url: getMarkerIcon(marker.destination.type, true),
+                        scaledSize: new google.maps.Size(40, 40)
+                    });
+                });
+            });
+
+            // Add marker clustering
+            if (markerCluster) markerCluster.clearMarkers();
+            markerCluster = new markerClusterer.MarkerClusterer({ map, markers });
+        }
+
+        // Get appropriate marker icon based on destination type
+        function getMarkerIcon(type, selected = false) {
+            const size = selected ? 40 : 32;
+            const colorMap = {
+                beach: "FF6384",
+                mountain: "4BC0C0",
+                city: "FFCE56",
+                adventure: "36A2EB",
+                default: "9966FF"
+            };
+            const color = colorMap[type] || colorMap.default;
+            return `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${color}|000000`;
+        }
+
+        // Show location details in side panel
+        function showLocationDetails(destination) {
+            document.getElementById("noSelection").classList.add("hidden");
+            document.getElementById("locationDetails").classList.remove("hidden");
+            
+            document.getElementById("locationName").textContent = destination.name;
+            document.getElementById("locationImage").src = destination.image;
+            document.getElementById("locationImage").alt = destination.name;
+            document.getElementById("locationDescription").textContent = destination.description;
+            document.getElementById("locationPrice").textContent = destination.price;
+            document.getElementById("locationDuration").textContent = destination.duration;
+        }
+
+        // Send chat message
+        function sendChatMessage() {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const chatMessages = document.getElementById("chatMessages");
+            
+            // Add user message
+            chatMessages.innerHTML += `
+                <div class="flex justify-end mb-3">
+                    <div class="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+                        <p>${message}</p>
+                    </div>
+                </div>
+            `;
+            
+            input.value = "";
+            
+            // Simulate AI response
+            setTimeout(() => {
+                chatMessages.innerHTML += `
+                    <div class="flex items-start mb-3">
+                        <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                            <p>Thanks for your question! Our AI is analyzing your request to provide the best recommendations. A human expert will also review this shortly.</p>
+                        </div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener("DOMContentLoaded", () => {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById("mobile-menu-button");
+            const mobileMenu = document.getElementById("mobile-menu");
+            
+            mobileMenuButton.addEventListener("click", () => {
+                mobileMenu.classList.toggle("hidden");
+            });
+            
+            // Filter buttons
+            document.querySelectorAll(".filter-btn").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                    this.classList.add("active");
+                    addMarkers();
+                });
+            });
+            
+            // Close details button
+            document.getElementById("closeDetails").addEventListener("click", () => {
+                document.getElementById("locationDetails").classList.add("hidden");
+                document.getElementById("noSelection").classList.remove("hidden");
+                if (selectedMarker) {
+                    selectedMarker.setIcon({
+                        url: getMarkerIcon(selectedMarker.destination.type),
+                        scaledSize: new google.maps.Size(32, 32)
+                    });
+                    selectedMarker = null;
+                }
+            });
+            
+            // Connect button
+            document.getElementById("connectBtn").addEventListener("click", () => {
+                document.getElementById("chatModal").classList.remove("hidden");
+                document.body.style.overflow = "hidden";
+                
+                // Initialize chat (demo purposes)
+                const chatMessages = document.getElementById("chatMessages");
+                chatMessages.innerHTML = `
+                    <div class="flex items-start mb-3">
+                        <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                            <p>Hello! I'm Alex, your PowerBed travel expert for ${document.getElementById("locationName").textContent}. How can I help you?</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Close chat modal
+            document.getElementById("closeChatModal").addEventListener("click", () => {
+                document.getElementById("chatModal").classList.add("hidden");
+                document.body.style.overflow = "auto";
+            });
+            
+            // Send chat message
+            document.getElementById("sendChatBtn").addEventListener("click", sendChatMessage);
+            document.getElementById("chatInput").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") sendChatMessage();
+            });
+        });
+
+        // Error handling for Google Maps
+        window.gm_authFailure = function() {
+            alert("Google Maps failed to load. Please check your API key and try again.");
+        };
+    </script>
+</body>
+</html>
